@@ -1,4 +1,4 @@
-'use server';
+// AI features disabled for static build
 
 import { extractMedicalEntities } from '@/ai/flows/extract-medical-entities';
 
@@ -11,8 +11,6 @@ export async function handleExtract(remarks: string) {
     return { data: result };
   } catch (e) {
     console.error(e);
-    // This is a more generic error message for the user.
-    // The specific error is logged on the server.
     return { error: 'An unexpected error occurred while processing the request.' };
   }
 }
