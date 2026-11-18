@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import type { CertificateData, ProfileData } from '@/lib/types';
 import { defaultProfile } from '@/lib/constants';
+import { useQrCode } from '@/hooks/useQrCode';
 
 // A helper to replace spaces for better PDF rendering with html2canvas
 const withNbsp = (text: string | undefined): string => {
@@ -15,11 +16,8 @@ const withNbsp = (text: string | undefined): string => {
 export function CertificateDisplay({ certificate, profile, qrCodeUrlOverride }: { certificate: CertificateData; profile: ProfileData, qrCodeUrlOverride?: string }) {
 
     const verificationUrl = certificate.id ? `https://medcertgen.visibleclinic.com/verify/${certificate.id}` : '';
-    const defaultQrCodeUrl = verificationUrl
-        ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(verificationUrl)}`
-        : "https://placehold.co/150x150.png";
-    
-    const qrCodeUrl = qrCodeUrlOverride || defaultQrCodeUrl;
+    const generatedQrCodeUrl = useQrCode(verificationUrl);
+    const qrCodeUrl = qrCodeUrlOverride || generatedQrCodeUrl;
 
 
     const pronoun = certificate.sex === 'Male' ? 'He' : certificate.sex === 'Female' ? 'She' : 'He/She';
