@@ -29,6 +29,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { CertificateDisplay } from '@/components/CertificateDisplay';
 import { defaultProfile } from '@/lib/constants';
+import { useQrCode } from '@/hooks/useQrCode';
 
 const certificateSchema = z.object({
   patientName: z.string().min(1, 'Patient name is required'),
@@ -84,7 +85,6 @@ export default function HomePage() {
   const [isHighlightingRemarks, setIsHighlightingRemarks] = useState(false);
   const [isHighlightingNew, setIsHighlightingNew] = useState(false);
   const [isHpiModalOpen, setIsHpiModalOpen] = useState(false);
-  const [qrCodeDataUri, setQrCodeDataUri] = useState<string>('');
   
   const remarksRef = useRef<HTMLTextAreaElement>(null);
   const hpiTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -191,34 +191,7 @@ export default function HomePage() {
 
   const verificationUrl = certificateId ? `https://medcertgen.visibleclinic.com/verify/${certificateId}` : '';
 
-  useEffect(() => {
-    const qrCodeApiUrl = verificationUrl
-        ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(verificationUrl)}`
-        : "";
-
-    if (!qrCodeApiUrl) {
-      setQrCodeDataUri("https://placehold.co/150x150.png");
-      return;
-    };
-
-    const fetchQrCode = async () => {
-      try {
-        const response = await fetch(qrCodeApiUrl);
-        if (!response.ok) throw new Error('QR code fetch failed');
-        const blob = await response.blob();
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setQrCodeDataUri(reader.result as string);
-        };
-        reader.readAsDataURL(blob);
-      } catch (error) {
-        console.error('Failed to fetch QR code:', error);
-        setQrCodeDataUri("https://placehold.co/150x150.png");
-      }
-    };
-
-    fetchQrCode();
-  }, [verificationUrl]);
+  const qrCodeDataUri = useQrCode(verificationUrl);
 
   const certificatePreviewData: CertificateData = {
       id: certificateId,

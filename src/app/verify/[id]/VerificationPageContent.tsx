@@ -3,12 +3,22 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { ShieldCheck, ShieldAlert } from 'lucide-react';
-import { CertificateDisplay } from '@/components/CertificateDisplay';
+import { format } from 'date-fns';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import type { CertificateData, ProfileData } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { defaultProfile } from '@/lib/constants';
+
+const toInitials = (name: string) =>
+    name.split(/\s+/).filter(Boolean).map((part) => `${part[0].toUpperCase()}.`).join('') || '-';
+
+const SummaryRow = ({ label, value }: { label: string; value: string }) => (
+    <div className="flex justify-between gap-4 border-b pb-2 last:border-0">
+        <span className="font-semibold text-muted-foreground">{label}</span>
+        <span className="text-right break-words">{value}</span>
+    </div>
+);
 
 export default function VerificationPageContent() {
     const params = useParams();
@@ -58,7 +68,15 @@ export default function VerificationPageContent() {
                             </div>
                         </CardHeader>
                     </Card>
-                    <CertificateDisplay certificate={certificate} profile={profile} />
+                    <Card>
+                        <CardContent className="p-6 space-y-4 text-sm">
+                            <SummaryRow label="Status" value="Valid" />
+                            <SummaryRow label="Issue date" value={certificate.dateOfConsultation ? format(new Date(certificate.dateOfConsultation), 'MMMM d, yyyy') : '-'} />
+                            <SummaryRow label="Issued by" value={`${profile.doctorName}, PRC No. ${profile.prcNumber}`} />
+                            <SummaryRow label="Patient" value={toInitials(certificate.patientName)} />
+                            <SummaryRow label="Leave" value={certificate.workStatus === 'Fit' ? 'Fit to work, no leave' : certificate.durationOfLeave || '-'} />
+                        </CardContent>
+                    </Card>
                     </>
                 ) : (
                     <Card className="border-destructive bg-destructive/10">
